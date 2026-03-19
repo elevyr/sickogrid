@@ -28,9 +28,6 @@ export const ShareableCard = forwardRef<HTMLDivElement, Props>(({ game }, ref) =
   const { homeTeam, awayTeam, chaosScore, round, clock } = game
   const color = getChaosColor(chaosScore)
   const headline = getChaosHeadline(chaosScore)
-  const spread = game.snapshots.at(-1)?.spread ?? 0
-  const spreadStr = spread === 0 ? 'PK' : spread > 0 ? `+${spread}` : `${spread}`
-
   // Determine leading team
   const homeLeading = homeTeam.score >= awayTeam.score
 
@@ -164,7 +161,7 @@ export const ShareableCard = forwardRef<HTMLDivElement, Props>(({ game }, ref) =
         paddingTop: 16,
       }}>
         <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em' }}>
-          SPREAD <span style={{ color: 'rgba(255,255,255,0.5)' }}>{spreadStr}</span>
+          CHAOS <span style={{ color: 'rgba(255,255,255,0.5)' }}>{chaosScore.toFixed(1)}</span>
         </span>
         <span style={{
           fontSize: 12, fontWeight: 700,

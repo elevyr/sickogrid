@@ -4,23 +4,12 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "vite",
-  "functions": {
-    "api/odds.ts": {
-      "runtime": "edge"
-    }
-  },
   "headers": [
     {
       "source": "/sw.js",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Service-Worker-Allowed", "value": "/" }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" }
       ]
     }
   ]

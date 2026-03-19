@@ -92,3 +92,18 @@
     text-shadow: 0 0 8px #00F5FF, 0 0 20px #00F5FF;
   }
 }
+
+/* Slow glow pulse for share button */
+@keyframes slow-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px #FF2D7860, 0 0 12px #FF2D7830;
+    border-color: rgba(255, 45, 120, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 10px #FF2D78, 0 0 24px #FF2D7860;
+    border-color: #FF2D78;
+  }
+}
+.animate-slow-glow {
+  animation: slow-glow 2.5s ease-in-out infinite;
+}

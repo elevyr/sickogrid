@@ -5,7 +5,6 @@ export type SportId = 'ncaa' | 'mlb' | 'nfl'
 export interface SportConfig {
   id: SportId
   displayName: string
-  apiKey: string        // The Odds API sport key
   season: string
   emoji: string
 }
@@ -14,21 +13,18 @@ const SPORT_CONFIGS: Record<SportId, SportConfig> = {
   ncaa: {
     id: 'ncaa',
     displayName: 'NCAA Tournament',
-    apiKey: 'basketball_ncaab',
     season: '2025-26',
     emoji: '🏀',
   },
   mlb: {
     id: 'mlb',
     displayName: 'MLB',
-    apiKey: 'baseball_mlb',
     season: '2026',
     emoji: '⚾',
   },
   nfl: {
     id: 'nfl',
     displayName: 'NFL',
-    apiKey: 'americanfootball_nfl',
     season: '2026',
     emoji: '🏈',
   },

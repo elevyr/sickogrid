@@ -1,56 +1,75 @@
-/** Raw shape returned by The Odds API /v4/sports/{sport}/odds */
-export interface OddsApiGame {
+/** ESPN Scoreboard API response */
+export interface EspnScoreboard {
+  events: EspnEvent[]
+  day: { date: string }
+}
+
+export interface EspnEvent {
   id: string
-  sport_key: string
-  sport_title: string
-  commence_time: string
-  home_team: string
-  away_team: string
-  bookmakers: OddsApiBookmaker[]
-}
-
-export interface OddsApiBookmaker {
-  key: string
-  title: string
-  markets: OddsApiMarket[]
-}
-
-export interface OddsApiMarket {
-  key: 'spreads' | 'h2h'
-  outcomes: OddsApiOutcome[]
-}
-
-export interface OddsApiOutcome {
+  date: string
   name: string
-  price: number   // American odds
-  point?: number  // Spread value (negative = favorite)
+  shortName: string
+  competitions: EspnCompetition[]
 }
 
-/** Raw shape returned by The Odds API /v4/sports/{sport}/scores */
-export interface OddsApiScore {
+export interface EspnCompetition {
   id: string
-  sport_key: string
-  commence_time: string
-  completed: boolean
-  home_team: string
-  away_team: string
-  scores: Array<{ name: string; score: string }> | null
-  last_update: string | null
+  date: string
+  competitors: EspnCompetitor[]
+  status: EspnStatus
+  notes?: Array<{ headline: string }>
+  venue?: {
+    fullName: string
+    address?: { city: string; state: string }
+  }
 }
 
-/** Merged, normalized game returned by our Edge Function */
-export interface LiveGame {
+export interface EspnCompetitor {
+  homeAway: 'home' | 'away'
+  score: string
+  winner?: boolean
+  curatedRank?: { current: number }
+  team: {
+    id: string
+    abbreviation: string
+    displayName: string
+    shortDisplayName: string
+    color: string
+    logo: string
+  }
+}
+
+export interface EspnStatus {
+  clock: number
+  displayClock: string
+  period: number
+  type: {
+    id: string
+    name: string
+    state: 'pre' | 'in' | 'post'
+    completed: boolean
+    description: string
+    detail: string
+    shortDetail: string
+  }
+}
+
+/** Normalized game used throughout the app */
+export interface NormalizedGame {
   id: string
-  sport: string
   homeTeam: string
   awayTeam: string
-  homeScore: number | null
-  awayScore: number | null
+  homeAbbr: string
+  awayAbbr: string
+  homeScore: number
+  awayScore: number
+  homeSeed: number
+  awaySeed: number
   commenceTime: string
-  completed: boolean
-  /** Current spread (home perspective, negative = home favored) */
-  spread: number | null
-  /** Home moneyline */
-  homeMoneyline: number | null
-  awayMoneyline: number | null
+  status: 'live' | 'upcoming' | 'final'
+  clock: string          // e.g. "6:48 - 1st Half" or "Final" or "7:30 PM"
+  round: string          // e.g. "South - 1st Round"
+  period: number
+  displayClock: string   // raw clock e.g. "6:48"
+  clockSeconds: number   // seconds remaining in current half
 }
