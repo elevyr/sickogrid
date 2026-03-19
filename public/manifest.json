@@ -1,0 +1,21 @@
+{
+  "name": "SickoGrid",
+  "short_name": "SickoGrid",
+  "description": "Live chaos tracker — find the best NCAA games right now",
+  "theme_color": "#FF2D78",
+  "background_color": "#050505",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["sports", "entertainment"]
+}

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#050505" rx="96"/>
+  <!-- Neon glow effect via filter -->
+  <defs>
+    <filter id="glow-pink" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-cyan" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- S in neon pink -->
+  <text
+    x="136" y="340"
+    font-family="system-ui, -apple-system, Arial Black, sans-serif"
+    font-weight="900"
+    font-size="280"
+    fill="#FF2D78"
+    filter="url(#glow-pink)"
+  >S</text>
+  <!-- G in neon cyan -->
+  <text
+    x="262" y="340"
+    font-family="system-ui, -apple-system, Arial Black, sans-serif"
+    font-weight="900"
+    font-size="280"
+    fill="#00F5FF"
+    filter="url(#glow-cyan)"
+  >G</text>
+</svg>
