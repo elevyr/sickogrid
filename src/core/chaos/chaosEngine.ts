@@ -25,10 +25,11 @@ export function computeChaosScore(game: NormalizedGame): number {
   if (totalPoints === 0) return 1
 
   // ── Closeness (0–10): how tight is the game? ──
-  // A 0-point game = 10, a 20+ point game = ~1
-  const closeness = clamp(10 - scoreDiff * 0.5, 1, 10)
+  // In basketball a 5-pt game under 2 min is a coin flip.
+  // Use a gentler curve: 0pt=10, 10pt=5, 20pt+=1
+  const closeness = clamp(10 - scoreDiff * 0.45, 1, 10)
 
-  // ── Upset factor (0–10): is the underdog winning? ──
+  // ── Upset factor (0–10): seed mismatch tension ──
   let upsetScore = 1
   if (homeSeed > 0 && awaySeed > 0) {
     const seedDiff = Math.abs(homeSeed - awaySeed)
@@ -38,11 +39,13 @@ export function computeChaosScore(game: NormalizedGame): number {
       (higherSeed === 'away' && awayScore > homeScore)
 
     if (underdogLeading) {
-      // Scale by seed difference: a 16 beating a 1 is max chaos
-      upsetScore = clamp(1 + seedDiff * 0.8, 1, 10)
-    } else if (scoreDiff <= 5) {
-      // Underdog is close — still chaotic
-      upsetScore = clamp(1 + seedDiff * 0.4, 1, 7)
+      // Underdog winning — max chaos potential
+      upsetScore = clamp(2 + seedDiff * 1.0, 1, 10)
+    } else if (scoreDiff <= 10) {
+      // Underdog within striking distance — still very chaotic
+      // A 5-seed-diff game within 5 pts should score ~6-7, not 3
+      const proximityBoost = clamp((11 - scoreDiff) / 10, 0, 1)
+      upsetScore = clamp(2 + seedDiff * 0.9 * proximityBoost, 1, 9)
     }
   }
 
@@ -52,26 +55,29 @@ export function computeChaosScore(game: NormalizedGame): number {
     const isSecondHalf = period >= 2
     const minutesLeft = clockSeconds / 60
 
-    if (isSecondHalf && minutesLeft <= 5 && scoreDiff <= 8) {
-      // Under 5 min, within 8 points — heating up
+    if (isSecondHalf && minutesLeft <= 5 && scoreDiff <= 10) {
+      // Under 5 min — heating up, tighter games get extra boost
       lateBonus = clamp(10 - minutesLeft, 5, 10)
       if (scoreDiff <= 3) lateBonus = clamp(lateBonus + 2, 1, 10)
-    } else if (isSecondHalf && minutesLeft <= 10 && scoreDiff <= 5) {
-      lateBonus = clamp(7 - minutesLeft * 0.3, 3, 7)
+      else if (scoreDiff <= 6) lateBonus = clamp(lateBonus + 1, 1, 10)
+    } else if (isSecondHalf && minutesLeft <= 10 && scoreDiff <= 8) {
+      lateBonus = clamp(8 - minutesLeft * 0.4, 3, 8)
     }
   }
 
   // ── Final game bonus: close finals are notable ──
   if (status === 'final') {
-    if (scoreDiff <= 3) lateBonus = 6
-    else if (scoreDiff <= 6) lateBonus = 3
+    if (scoreDiff <= 3) lateBonus = 7
+    else if (scoreDiff <= 6) lateBonus = 4
+    else if (scoreDiff <= 10) lateBonus = 2
   }
 
   // ── Weighted composite ──
+  // Late-game tension is the biggest chaos driver when clock is low
   const WEIGHTS = {
-    closeness: 0.35,
-    upset: 0.40,
-    late: 0.25,
+    closeness: 0.30,
+    upset: 0.35,
+    late: 0.35,
   }
 
   const composite =
