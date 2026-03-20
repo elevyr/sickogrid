@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Header } from '@/components/layout/Header'
+import { HeroBanner } from '@/components/onboarding/HeroBanner'
+import { PushOptIn } from '@/components/onboarding/PushOptIn'
 import { GameCard } from '@/features/games/components/GameCard'
 import { SectionHeader } from '@/features/games/components/SectionHeader'
 import { useGames } from '@/api/hooks/useGames'
@@ -19,6 +21,8 @@ function App() {
   return (
     <div className="min-h-svh" style={{ background: '#050505' }}>
       <Header />
+      <HeroBanner />
+      <PushOptIn />
 
       <main className="px-4 py-5 max-w-lg mx-auto">
         <div className="flex items-baseline justify-between mb-5">
