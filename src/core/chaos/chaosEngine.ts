@@ -51,11 +51,16 @@ export function computeChaosScore(game: NormalizedGame): number {
 
   // ── Late game bonus (0–10): close games in final minutes ──
   let lateBonus = 1
+  const isOT = period >= 3 // OT periods are 3+
   if (status === 'live') {
     const isSecondHalf = period >= 2
     const minutesLeft = clockSeconds / 60
 
-    if (isSecondHalf && minutesLeft <= 5 && scoreDiff <= 10) {
+    if (isOT) {
+      // Any OT game is inherently chaotic — start at 8 minimum
+      lateBonus = clamp(10 - minutesLeft * 0.4, 8, 10)
+      if (scoreDiff <= 3) lateBonus = 10
+    } else if (isSecondHalf && minutesLeft <= 5 && scoreDiff <= 10) {
       // Under 5 min — heating up, tighter games get extra boost
       lateBonus = clamp(10 - minutesLeft, 5, 10)
       if (scoreDiff <= 3) lateBonus = clamp(lateBonus + 2, 1, 10)
@@ -67,9 +72,15 @@ export function computeChaosScore(game: NormalizedGame): number {
 
   // ── Final game bonus: close finals are notable ──
   if (status === 'final') {
-    if (scoreDiff <= 3) lateBonus = 7
-    else if (scoreDiff <= 6) lateBonus = 4
-    else if (scoreDiff <= 10) lateBonus = 2
+    if (isOT) {
+      lateBonus = scoreDiff <= 3 ? 9 : 7
+    } else if (scoreDiff <= 3) {
+      lateBonus = 7
+    } else if (scoreDiff <= 6) {
+      lateBonus = 4
+    } else if (scoreDiff <= 10) {
+      lateBonus = 2
+    }
   }
 
   // ── Weighted composite ──
@@ -80,10 +91,15 @@ export function computeChaosScore(game: NormalizedGame): number {
     late: 0.35,
   }
 
-  const composite =
+  let composite =
     closeness * WEIGHTS.closeness +
     upsetScore * WEIGHTS.upset +
     lateBonus * WEIGHTS.late
+
+  // OT floor: any overtime game should be at least 7.5
+  if (isOT && status === 'live') {
+    composite = Math.max(composite, 7.5)
+  }
 
   return Math.round(clamp(composite, 1, 10) * 10) / 10
 }
