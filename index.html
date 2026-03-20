@@ -22,6 +22,16 @@
     <link rel="manifest" href="/manifest.json" />
 
     <title>SickoGrid</title>
+
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "9c5506bf-c258-4f3c-88ff-98504343c22e",
+        });
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
