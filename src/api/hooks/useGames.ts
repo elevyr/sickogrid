@@ -55,6 +55,7 @@ function toGame(g: NormalizedGame): Game {
       score: g.awayScore,
     },
     chaosScore: computeChaosScore(g),
+    broadcast: g.broadcast,
   }
 }
 

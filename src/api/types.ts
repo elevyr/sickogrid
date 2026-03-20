@@ -18,6 +18,7 @@ export interface EspnCompetition {
   competitors: EspnCompetitor[]
   status: EspnStatus
   notes?: Array<{ headline: string }>
+  broadcasts?: Array<{ market: string; names: string[] }>
   venue?: {
     fullName: string
     address?: { city: string; state: string }
@@ -72,4 +73,5 @@ export interface NormalizedGame {
   period: number
   displayClock: string   // raw clock e.g. "6:48"
   clockSeconds: number   // seconds remaining in current half
+  broadcast: string      // TV network e.g. "CBS", "TBS", "" if unknown
 }

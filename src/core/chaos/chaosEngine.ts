@@ -25,9 +25,18 @@ export function computeChaosScore(game: NormalizedGame): number {
   if (totalPoints === 0) return 1
 
   // ── Closeness (0–10): how tight is the game? ──
-  // In basketball a 5-pt game under 2 min is a coin flip.
-  // Use a gentler curve: 0pt=10, 10pt=5, 20pt+=1
-  const closeness = clamp(10 - scoreDiff * 0.45, 1, 10)
+  // Time-aware: a 6-pt lead with 10 seconds left is a lock, not a "close game"
+  // In late-game situations, treat any within-reach deficit as close
+  let closeness = clamp(10 - scoreDiff * 0.45, 1, 10)
+  if (status === 'live' && period >= 2) {
+    const minutesLeft = clockSeconds / 60
+    if (minutesLeft <= 2 && scoreDiff <= 8) {
+      // Under 2 min: anything within ~8 is still a game, boost closeness
+      closeness = clamp(10 - scoreDiff * 0.2, 7, 10)
+    } else if (minutesLeft <= 5 && scoreDiff <= 6) {
+      closeness = clamp(10 - scoreDiff * 0.3, 6, 10)
+    }
+  }
 
   // ── Upset factor (0–10): seed mismatch tension ──
   let upsetScore = 1
@@ -41,9 +50,13 @@ export function computeChaosScore(game: NormalizedGame): number {
     if (underdogLeading) {
       // Underdog winning — max chaos potential
       upsetScore = clamp(2 + seedDiff * 1.0, 1, 10)
+
+      // Clinch bonus: under 1 min + underdog leading = upset is happening
+      if (status === 'live' && period >= 2 && clockSeconds <= 60 && scoreDiff >= 3) {
+        upsetScore = clamp(upsetScore + 2, 1, 10)
+      }
     } else if (scoreDiff <= 10) {
       // Underdog within striking distance — still very chaotic
-      // A 5-seed-diff game within 5 pts should score ~6-7, not 3
       const proximityBoost = clamp((11 - scoreDiff) / 10, 0, 1)
       upsetScore = clamp(2 + seedDiff * 0.9 * proximityBoost, 1, 9)
     }

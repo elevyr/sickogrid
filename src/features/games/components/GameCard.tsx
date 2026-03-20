@@ -4,6 +4,17 @@ import { useUserStore } from '@/stores/userStore'
 import { useShareChaos } from '@/features/share/hooks/useShareChaos'
 import { ShareableCard } from '@/features/share/components/ShareableCard'
 
+const DRAFTKINGS_URL =
+  'https://sportsbook.draftkings.com/leagues/basketball/ncaab'
+
+const BROADCAST_COLORS: Record<string, string> = {
+  CBS: '#1a5eab',
+  TNT: '#8b5cf6',
+  TBS: '#e67e22',
+  truTV: '#22c55e',
+  'TBS/TNT': '#eab308',
+}
+
 interface Props {
   game: Game
   rank?: number
@@ -28,14 +39,16 @@ function getUpsetInfo(game: Game): { isUpset: boolean; label: string } | null {
 }
 
 export function GameCard({ game, rank }: Props) {
-  const { homeTeam, awayTeam, clock, round, chaosScore, status } = game
+  const { homeTeam, awayTeam, clock, round, chaosScore, status, broadcast } = game
   const { toggleFollow, isFollowing } = useUserStore()
   const { cardRef, status: shareStatus, share, label } = useShareChaos(game)
-  const isHedge = status === 'live' && chaosScore >= 8.0
+  const isLive = status === 'live'
+  const shouldPulseHedge = isLive && chaosScore >= 8.0
   const isSharing = shareStatus === 'generating' || shareStatus === 'sharing'
   const isFinal = status === 'final'
   const isUpcoming = status === 'upcoming'
   const upset = getUpsetInfo(game)
+  const broadcastColor = broadcast ? BROADCAST_COLORS[broadcast] : null
 
   return (
     <div
@@ -44,14 +57,14 @@ export function GameCard({ game, rank }: Props) {
         background: isFinal
           ? 'linear-gradient(135deg, #0d0d0d 0%, #080808 100%)'
           : 'linear-gradient(135deg, #111 0%, #0a0a0a 100%)',
-        border: isHedge
+        border: shouldPulseHedge
           ? '1px solid #FF2D78'
           : upset
             ? '1px solid rgba(255, 230, 0, 0.3)'
             : isFinal
               ? '1px solid rgba(255,255,255,0.04)'
               : '1px solid rgba(255,255,255,0.08)',
-        boxShadow: isHedge
+        boxShadow: shouldPulseHedge
           ? '0 0 20px #FF2D7840, inset 0 0 20px #FF2D7808'
           : upset
             ? '0 0 12px rgba(255, 230, 0, 0.15)'
@@ -60,7 +73,7 @@ export function GameCard({ game, rank }: Props) {
       }}
     >
       {/* Hidden shareable card */}
-      {status === 'live' && (
+      {isLive && (
         <div style={{ position: 'fixed', left: '-9999px', top: 0, pointerEvents: 'none', zIndex: -1 }}>
           <ShareableCard ref={cardRef} game={game} />
         </div>
@@ -73,11 +86,24 @@ export function GameCard({ game, rank }: Props) {
         </div>
       )}
 
-      {/* Top row: round + clock/status */}
+      {/* Top row: round + TV badge + clock/status */}
       <div className="flex items-center justify-between pl-7">
-        <span className="text-xs font-semibold tracking-widest uppercase text-[#00F5FF]">
-          {round}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold tracking-widest uppercase text-[#00F5FF]">
+            {round}
+          </span>
+          {broadcastColor && (
+            <span
+              className="text-[10px] font-bold px-1.5 py-0.5 rounded-full tracking-wide"
+              style={{
+                background: broadcastColor,
+                color: '#fff',
+              }}
+            >
+              {broadcast}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {upset && (
             <span
@@ -88,7 +114,7 @@ export function GameCard({ game, rank }: Props) {
             </span>
           )}
           <div className="flex items-center gap-1.5">
-            {status === 'live' && (
+            {isLive && (
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D78] animate-pulse" />
             )}
             <span className="text-xs text-white/60 font-mono">{clock}</span>
@@ -176,7 +202,7 @@ export function GameCard({ game, rank }: Props) {
           })}
 
           {/* Share button (live only) */}
-          {status === 'live' && (
+          {isLive && (
             <button
               onClick={share}
               disabled={isSharing}
@@ -191,21 +217,31 @@ export function GameCard({ game, rank }: Props) {
               {isSharing ? '\u23F3' : '\u26A1'} {label}
             </button>
           )}
-
-          {/* Hedge button */}
-          {isHedge && (
-            <button
-              className="px-3 py-1.5 rounded-full text-xs font-black tracking-widest uppercase text-black animate-pulse"
-              style={{
-                background: '#FF2D78',
-                boxShadow: '0 0 10px #FF2D78, 0 0 20px #FF2D7860',
-              }}
-            >
-              HEDGE
-            </button>
-          )}
         </div>
       </div>
+
+      {/* Hedge Now button — all live games */}
+      {isLive && (
+        <div className="flex flex-col items-center gap-1 pt-1">
+          <a
+            href={DRAFTKINGS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`px-4 py-2 rounded-full text-xs font-black tracking-widest uppercase text-black transition-all${shouldPulseHedge ? ' animate-pulse' : ''}`}
+            style={{
+              background: '#FF2D78',
+              boxShadow: shouldPulseHedge
+                ? '0 0 10px #FF2D78, 0 0 20px #FF2D7860'
+                : '0 0 6px #FF2D7840',
+            }}
+          >
+            HEDGE NOW
+          </a>
+          <span className="text-[9px] text-white/25 text-center leading-tight">
+            21+ Only. Gambling problem? Call 1-800-GAMBLER
+          </span>
+        </div>
+      )}
     </div>
   )
 }

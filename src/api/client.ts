@@ -27,12 +27,15 @@ export async function fetchGames(): Promise<NormalizedGame[]> {
       const status: NormalizedGame['status'] =
         state === 'in' ? 'live' : state === 'post' ? 'final' : 'upcoming'
 
-      // Parse round from notes
+      // Parse round from notes → map to canonical labels
       const note = comp.notes?.[0]?.headline ?? ''
-      const round = note
+      const rawRound = note
         .replace("NCAA Men's Basketball Championship - ", '')
-        .replace(' Round', '')
-        .trim() || 'NCAA Tournament'
+        .trim()
+      const round = normalizeRound(rawRound)
+
+      // Broadcast network
+      const broadcast = comp.broadcasts?.[0]?.names?.[0] ?? ''
 
       // Clock display
       let clock = st.type.shortDetail
@@ -61,6 +64,25 @@ export async function fetchGames(): Promise<NormalizedGame[]> {
         period: st.period,
         displayClock: st.displayClock,
         clockSeconds: st.clock,
+        broadcast,
       }
     })
+}
+
+/** Map ESPN round text to canonical display labels */
+function normalizeRound(raw: string): string {
+  const lower = raw.toLowerCase()
+  if (lower.includes('1st round') || lower.includes('first round') || lower.includes('round of 64'))
+    return 'Round of 64'
+  if (lower.includes('2nd round') || lower.includes('second round') || lower.includes('round of 32'))
+    return 'Round of 32'
+  if (lower.includes('sweet 16') || lower.includes('regional semifinal'))
+    return 'Sweet 16'
+  if (lower.includes('elite 8') || lower.includes('elite eight') || lower.includes('regional final'))
+    return 'Elite 8'
+  if (lower.includes('final four') || lower.includes('national semifinal'))
+    return 'Final Four'
+  if (lower.includes('championship') || lower.includes('national championship') || lower.includes('title'))
+    return 'Championship'
+  return raw || 'NCAA Tournament'
 }
